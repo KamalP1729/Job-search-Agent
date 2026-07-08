@@ -1,0 +1,20 @@
+Company: Growthsphere AI
+Role: AI Engineer (Multi-Agent)
+Location: Bangalore, India (US HQ, BLR office)
+Domain: Fintech
+
+About: Growthsphere AI builds multi-agent AI systems for fintech — automating financial workflows using coordinated AI agent networks.
+
+Responsibilities:
+- Build multi-agent AI systems for financial automation
+- Design agent orchestration and coordination frameworks
+- Work on LLM integration for financial workflow automation
+- Build and evaluate agent pipelines end-to-end
+- Ship production multi-agent systems
+
+Requirements:
+- Strong LLM and agentic systems experience
+- Multi-agent frameworks (LangGraph, AutoGen, or similar)
+- Python, RAG, and retrieval systems
+- Financial domain knowledge a plus
+- Production AI deployment

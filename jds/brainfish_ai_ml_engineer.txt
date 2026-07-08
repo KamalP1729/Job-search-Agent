@@ -1,0 +1,20 @@
+Company: Brainfish
+Role: AI/ML Engineer
+Location: Remote (US)
+Stage: $10M seed funded
+
+About: Brainfish builds ambient AI for customer support — AI that understands support conversations and surfaces relevant knowledge proactively, without users having to search.
+
+Responsibilities:
+- Build NLP and ML systems for understanding customer support conversations
+- Work on semantic search, knowledge retrieval, and intent detection
+- Build ambient AI features that surface context proactively
+- Fine-tune LLMs for support domain
+- Ship production ML systems at seed-stage pace
+
+Requirements:
+- Strong NLP and LLM experience
+- Experience with semantic search and retrieval
+- Fine-tuning experience (LoRA/PEFT preferred)
+- Python, embeddings, vector databases
+- Production ML deployment experience

@@ -1,0 +1,19 @@
+Company: Refold AI
+Role: Founding AI Engineer
+Location: Bangalore, India
+
+About: Refold AI is building AI systems focused on memory, context management, and agent architectures — enabling AI agents to maintain long-term memory and context across sessions.
+
+Responsibilities:
+- Build memory and context management systems for AI agents
+- Design long-term memory architectures (episodic, semantic, procedural)
+- Work on LLM context window optimization and compression
+- Build agentic systems with persistent state
+- Own core AI architecture as a founding engineer
+
+Requirements:
+- Strong LLM and agentic systems experience
+- Experience with memory systems, context management, or knowledge graphs
+- Python, LangChain/LangGraph
+- RAG and retrieval experience
+- Founding engineer mindset

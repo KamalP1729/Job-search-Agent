@@ -1,0 +1,21 @@
+Company: Junction
+Role: Data Scientist
+Location: Fully Remote (EST timezone preferred)
+Compensation: $180,000–$220,000 + equity
+Stage: YC
+
+About: Junction is building infrastructure to connect and sync data across enterprise systems. Data scientist will work on ML features embedded in the core product.
+
+Responsibilities:
+- Build ML models to improve data mapping, entity resolution, and schema matching
+- Design and evaluate NLP models for understanding structured and semi-structured data
+- Work on ranking and recommendation systems
+- Build evaluation frameworks and benchmarks
+- Ship ML features end-to-end
+
+Requirements:
+- Strong Python and ML experience
+- NLP and embeddings experience
+- Statistical modeling, feature engineering
+- Experience with structured data and schema understanding
+- Production ML deployment

@@ -1,0 +1,19 @@
+Company: Palladio AI
+Role: Founding Data Scientist / ML Engineer
+Location: Remote (US)
+
+About: Palladio AI is building AI for behavioral modeling and causal inference — applying ML to understand and predict human behavior patterns.
+
+Responsibilities:
+- Build behavioral models using ML and statistical methods
+- Apply causal inference techniques (propensity scoring, diff-in-diff, IV)
+- Design and run A/B tests and observational studies
+- Build and maintain data pipelines for behavioral data
+- Work closely with the founding team
+
+Requirements:
+- Strong Python and ML/data science skills
+- Statistical modeling and causal inference experience
+- Feature engineering, behavioral data analysis
+- Experience with time-series or sequential behavioral data
+- Production ML deployment

@@ -1,0 +1,20 @@
+Company: Resend
+Role: Data Scientist, Trust & Safety
+Location: Remote
+Funding: $18M raised (YC / a16z)
+
+About: Resend is a developer-first email API platform. The Trust & Safety data scientist will build systems to detect spam, abuse, and policy violations at scale.
+
+Responsibilities:
+- Build ML models for spam detection, abuse detection, and email quality scoring
+- Design and maintain data pipelines for trust and safety signals
+- Work on anomaly detection and behavioral modeling
+- Collaborate with engineering to deploy models in production
+- Define metrics and build dashboards for safety KPIs
+
+Requirements:
+- Strong Python and ML/data science skills
+- Experience with classification, anomaly detection, or fraud/abuse systems
+- SQL, data pipelines, and analytics experience
+- Statistical modeling and feature engineering
+- Experience shipping ML models to production

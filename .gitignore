@@ -1,0 +1,35 @@
+# Secrets & credentials
+.env
+*.env
+*.pem
+*.key
+client_secret_*.json
+
+# Personal resume files
+*.pdf
+*.docx
+
+# Parsed profiles (may contain personal info)
+kamal_*.json
+*_profile.json
+
+# Output files
+batch_results.json
+search_results.json*
+recruiters.json
+
+# Notebooks with internal code
+*.ipynb
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# macOS
+.DS_Store

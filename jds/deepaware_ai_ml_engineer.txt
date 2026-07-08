@@ -1,0 +1,21 @@
+Company: DeepAware AI
+Role: AI/ML Engineer
+Location: Remote (US)
+Compensation: $130,000–$170,000
+Stage: YC S25
+
+About: DeepAware AI applies reinforcement learning to DCIM (Data Center Infrastructure Management) — optimizing cooling, power, and resource allocation in data centers using AI.
+
+Responsibilities:
+- Build and train reinforcement learning models for data center optimization
+- Design reward functions and simulation environments
+- Work on real-time inference pipelines for infrastructure decisions
+- Evaluate and iterate on RL policies
+- Deploy models in production data center environments
+
+Requirements:
+- Strong Python and ML/deep learning experience
+- Reinforcement learning experience (policy gradients, Q-learning, or similar)
+- PyTorch or TensorFlow
+- Experience with simulation environments or real-time systems
+- Production ML deployment experience

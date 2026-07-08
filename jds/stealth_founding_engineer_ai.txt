@@ -1,0 +1,20 @@
+Company: Stealth Startup (via Michael Page)
+Role: Founding Engineer (AI)
+Location: Bangalore, India
+Domain: Consumer AI agents
+
+About: Stealth consumer AI agent startup recruiting via Michael Page. Founding engineer role building core AI agent systems for a consumer product.
+
+Responsibilities:
+- Build consumer-facing AI agent systems
+- Design and implement LLM-powered conversational agents
+- Work on personalization and context management
+- Build production AI infrastructure as a founding engineer
+- Own end-to-end AI product development
+
+Requirements:
+- Strong LLM and agentic systems experience
+- Python, LangChain/LangGraph or similar
+- Production AI deployment
+- Experience building consumer AI products
+- Founding engineer mindset

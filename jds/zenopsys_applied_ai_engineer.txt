@@ -1,0 +1,20 @@
+Company: Zenopsys
+Role: Applied AI Engineer
+Location: Bangalore, India
+Stage: Seed funded, BITS alumni founded
+
+About: Zenopsys is a seed-funded AI startup founded by BITS alumni, building applied AI solutions for enterprise automation.
+
+Responsibilities:
+- Build applied AI and LLM-powered features
+- Work on NLP, text understanding, and document processing
+- Design and build RAG and retrieval systems
+- Integrate LLMs with enterprise data sources
+- Ship production AI features
+
+Requirements:
+- Strong Python and LLM experience
+- RAG and retrieval systems
+- NLP and text processing
+- FastAPI or similar
+- Production ML deployment

@@ -1,0 +1,20 @@
+Company: Expertia AI
+Role: NLP Engineer
+Location: Bangalore, India
+Level: Mid-level
+
+About: Expertia AI builds AI-powered talent intelligence and resume parsing/search infrastructure. NLP Engineer will work on understanding resumes, job descriptions, and skill graphs.
+
+Responsibilities:
+- Build NLP systems for resume parsing, skill extraction, and job-candidate matching
+- Work on named entity recognition, text classification, and semantic search
+- Build and fine-tune models for HR/talent domain
+- Design ranking and retrieval systems for job search
+- Evaluate and improve NLP model quality
+
+Requirements:
+- Strong Python and NLP experience
+- Named entity recognition, text classification, semantic search
+- Embeddings and similarity systems
+- Fine-tuning experience (LoRA/PEFT preferred)
+- Experience with resume/JD parsing a strong plus

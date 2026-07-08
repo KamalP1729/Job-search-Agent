@@ -1,0 +1,21 @@
+Company: Raven
+Role: Software Engineer (Backend / AI)
+Location: Bangalore, India
+Compensation: ₹20–45L
+Stage: YC
+
+About: Raven is building AI for heavy industry — helping industrial companies (manufacturing, energy, logistics) automate operations using AI.
+
+Responsibilities:
+- Build backend systems and AI features for industrial workflow automation
+- Work on data pipelines for structured and unstructured industrial data
+- Integrate LLMs for document processing and decision support
+- Build APIs and backend services (Python/FastAPI)
+- Ship production features in a fast YC startup environment
+
+Requirements:
+- Strong Python backend experience
+- LLM integration and AI feature development
+- FastAPI or similar frameworks
+- Data pipelines and SQL
+- Ability to work with domain-specific data (industrial/IoT a plus)

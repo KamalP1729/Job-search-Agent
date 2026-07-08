@@ -1,0 +1,20 @@
+Company: Ragie
+Role: AI/ML Engineer
+Location: Remote (US)
+Stage: Funded startup
+
+About: Ragie is a managed RAG (Retrieval-Augmented Generation) platform. Core product is a retrieval pipeline infrastructure for developers building AI applications.
+
+Responsibilities:
+- Build and optimize RAG pipelines end-to-end
+- Work on embeddings, chunking strategies, and vector retrieval
+- Improve retrieval quality using hybrid search (dense + sparse)
+- Build and evaluate embedding models and rerankers
+- Ship production-grade AI infrastructure
+
+Requirements:
+- Strong experience with RAG pipelines and retrieval systems
+- Deep knowledge of embeddings, vector databases (FAISS, ChromaDB, Pinecone)
+- Experience with hybrid retrieval (BM25 + dense)
+- Python, LLMs, LangChain or similar
+- Production NLP/ML experience

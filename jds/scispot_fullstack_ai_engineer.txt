@@ -1,0 +1,21 @@
+Company: Scispot
+Role: Full Stack AI Engineer
+Location: Remote (US)
+Compensation: $80,000–$120,000
+Stage: YC
+
+About: Scispot is building lab workflow automation for biotech and life sciences — an AI-powered operating system for scientific labs.
+
+Responsibilities:
+- Build AI features for lab workflow automation
+- Work on LLM integration for scientific data extraction and processing
+- Build full-stack features (backend + AI layer)
+- Design data pipelines for scientific/lab data
+- Ship product features end-to-end
+
+Requirements:
+- Full-stack engineering (Python backend required)
+- LLM and AI integration experience
+- FastAPI or similar backend framework
+- Experience with data extraction, OCR, or document processing
+- Ability to ship end-to-end features independently

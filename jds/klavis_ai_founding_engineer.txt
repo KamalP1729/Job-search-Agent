@@ -1,0 +1,21 @@
+Company: Klavis AI
+Role: Founding Engineer
+Location: Remote (US)
+Compensation: $150,000–$200,000 + equity
+Stage: YC
+
+About: Klavis AI is building agentic data infrastructure for frontier AI labs. Helps AI agents access, query, and reason over structured and unstructured data at scale.
+
+Responsibilities:
+- Build core agentic data pipelines used by frontier AI labs
+- Design systems for agents to query and reason over large datasets
+- Work on LLM tool use, function calling, and structured outputs
+- Build retrieval and indexing infrastructure
+- Founding engineer — own large pieces of the product
+
+Requirements:
+- Strong Python and LLM experience
+- Experience with agentic systems and tool use
+- RAG, embeddings, and retrieval experience
+- Ability to move fast and work independently
+- Startup/founding engineer mindset

@@ -1,0 +1,20 @@
+Company: 8byte
+Role: Data Scientist
+Location: Bangalore, India (in-office)
+Domain: Fintech, LLM/NLP
+
+About: 8byte is a fintech company building LLM/NLP-powered financial products. Data scientist will work on NLP systems for financial text understanding and automation.
+
+Responsibilities:
+- Build NLP models for financial text understanding
+- Work on LLM integration for fintech workflows
+- Build and maintain ML pipelines for financial data
+- Develop text classification, extraction, and summarization systems
+- Deploy ML models in production fintech environment
+
+Requirements:
+- Strong Python and NLP/ML experience
+- LLM integration and fine-tuning experience
+- Financial domain knowledge a plus
+- SQL and data pipelines
+- Production ML deployment

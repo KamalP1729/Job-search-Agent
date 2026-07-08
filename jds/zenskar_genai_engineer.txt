@@ -1,0 +1,33 @@
+Company: Zenskar
+Role: Senior Generative AI Engineer
+Location: Bangalore / New York City
+Stage: Series A ($24.8M total funding, ~85 employees)
+
+About Zenskar:
+Zenskar is an AI-native revenue automation platform that automates billing, revenue recognition, and usage metering for B2B SaaS companies. Founded 2022 by Apurv Bansal and Saurabh Agrawal.
+
+Role Overview:
+Build AI agents that automate complex finance workflows including billing, revenue recognition, and usage metering. Work on LLM-powered natural language interfaces that allow users to interact with the platform conversationally.
+
+Responsibilities:
+- Design and build agentic systems that handle complex financial logic end-to-end
+- Build LLM-powered natural language interfaces for finance workflows
+- Automate billing, revenue recognition, and usage metering using AI agents
+- Integrate LLMs with structured financial data and APIs
+- Work across the full AI stack from prompt engineering to production deployment
+- Collaborate with product and engineering to ship AI features at startup pace
+
+Requirements:
+- 4-6+ years of experience in AI/ML or software engineering
+- Strong Python skills
+- Hands-on experience building with LLMs (OpenAI, Gemini, or similar)
+- Experience with agent frameworks (LangChain, LangGraph, AutoGen, or similar)
+- Experience with AWS (SageMaker, EC2, S3, or similar)
+- Ability to design and ship production-grade agentic systems
+- Strong understanding of RAG, embeddings, and retrieval systems
+- Startup mindset — comfortable with ambiguity and fast iteration
+
+Nice to have:
+- Experience in fintech, billing, or revenue automation
+- Knowledge of financial workflows (billing, invoicing, revenue recognition)
+- Experience with APIs and system integrations

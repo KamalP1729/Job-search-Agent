@@ -1,0 +1,21 @@
+Company: Wildcard
+Role: Founding Applied ML Engineer
+Location: Remote (US)
+Compensation: $130,000–$250,000 + up to 4% equity
+Stage: YC
+
+About: Wildcard is building an AI-native product (stealth details limited). Founding Applied ML Engineer will shape the core ML/AI systems from the ground up.
+
+Responsibilities:
+- Build core ML/AI systems as a founding team member
+- Work on LLMs, fine-tuning, and production AI pipelines
+- Design and run experiments, evaluate model quality
+- Own ML infrastructure end-to-end
+- Work closely with founders to define AI strategy
+
+Requirements:
+- Strong applied ML and LLM experience
+- Fine-tuning experience (LoRA/PEFT)
+- Python, PyTorch, Hugging Face
+- RAG and retrieval systems experience
+- Founding engineer mindset — high ownership, fast mover

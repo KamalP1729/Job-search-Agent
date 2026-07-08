@@ -1,0 +1,20 @@
+Company: ZenteiQ.ai
+Role: Founding Engineer
+Location: Bangalore, India
+Stage: Early-stage Bangalore startup
+
+About: ZenteiQ.ai is an early-stage AI startup based in Bangalore building AI-powered products. Founding engineer will shape the core product and AI systems.
+
+Responsibilities:
+- Build core AI and product features as a founding team member
+- Work on LLM integration and agentic systems
+- Design data pipelines and AI infrastructure
+- Own product development end-to-end
+- Work directly with founders
+
+Requirements:
+- Strong Python and LLM experience
+- Agentic systems and RAG experience
+- FastAPI or similar backend
+- Founding engineer mindset
+- Ability to work across the full stack

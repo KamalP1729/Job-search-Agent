@@ -1,0 +1,26 @@
+# Core LLM + orchestration
+litellm>=1.40.0
+langgraph>=0.2.0
+langchain-core>=0.3.0
+
+# Resume parsing
+pdfplumber>=0.10.0
+python-docx>=1.1.0
+
+# Job search
+google-search-results>=2.4.0   # SerpAPI
+
+# HTTP
+requests>=2.31.0
+
+# Utilities
+cachetools>=5.3.0
+
+# Guardrails + validation
+pydantic>=2.7.0
+
+# Optional — Draup internal LLM manager (Draup employees only)
+# pip install 'git+https://<token>@github.com/Draup/draup-services.git@main#subdirectory=draup_packages'
+
+# Optional — AWS SDK (needed by DraupLLMManager for SSM key fetch)
+# boto3>=1.34.0

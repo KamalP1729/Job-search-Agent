@@ -1,0 +1,21 @@
+Company: DrDroid
+Role: Lead Data Scientist
+Location: Remote / Hybrid Bangalore
+Compensation: ₹50–70L
+Stage: YC W23
+
+About: DrDroid builds AI-powered observability and incident management for engineering teams — automatically diagnosing production issues and suggesting fixes.
+
+Responsibilities:
+- Lead data science efforts for AI-powered observability systems
+- Build ML models for anomaly detection, root cause analysis, and incident prediction
+- Work on log analysis, time-series modeling, and pattern recognition
+- Design and maintain ML pipelines for production observability data
+- Mentor and lead data science team
+
+Requirements:
+- Strong Python and ML/data science skills
+- Anomaly detection, time-series analysis, log analysis
+- LLM integration for diagnostic reasoning
+- Production ML deployment
+- Leadership experience preferred

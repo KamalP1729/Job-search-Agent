@@ -1,0 +1,20 @@
+Company: MinusX
+Role: AI Engineer
+Location: Remote (US)
+Stage: YC, early-stage tiny team
+
+About: MinusX is building an AI data scientist that lives inside Jupyter notebooks. The AI autonomously writes and executes code to analyze data on behalf of the user.
+
+Responsibilities:
+- Build the AI core that powers the in-notebook data scientist agent
+- Design agentic workflows for data analysis and code generation
+- Work on LLM integration with Python execution environments
+- Build evaluation frameworks for agent quality
+- Ship fast in a tiny team environment
+
+Requirements:
+- Experience building AI agents and agentic systems
+- Strong Python and LLM experience
+- Familiarity with Jupyter, data analysis workflows
+- LangChain, LangGraph or similar agent frameworks
+- Comfort with ambiguity and fast iteration (YC startup pace)

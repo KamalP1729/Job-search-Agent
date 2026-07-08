@@ -1,0 +1,21 @@
+Company: SuperKalam
+Role: AI Backend Engineer
+Location: Bangalore, India
+Compensation: ₹16–26L
+Stage: YC, AI-first education
+
+About: SuperKalam is an AI-first education platform helping students prepare for competitive exams using personalized AI tutoring and adaptive learning.
+
+Responsibilities:
+- Build AI backend systems for personalized learning
+- Work on LLM integration for tutoring and question generation
+- Design adaptive learning algorithms
+- Build and maintain data pipelines for student performance data
+- Ship backend AI features at YC pace
+
+Requirements:
+- Strong Python backend experience
+- LLM integration experience
+- FastAPI or Django
+- SQL and data pipelines
+- Interest in edtech and personalized learning

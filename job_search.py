@@ -1,0 +1,170 @@
+"""
+job_search.py — Searches Google Jobs via SerpAPI, scores results against a profile,
+and returns a ranked list of matching jobs.
+"""
+
+import os
+import json
+import time
+from serpapi import GoogleSearch
+from scorer import score_job
+
+SERP_API_KEY = os.environ.get("SERP_API_KEY", "")
+
+# Number of results to fetch per search query
+RESULTS_PER_QUERY = 10
+
+# Minimum score to include in ranked output
+MIN_SCORE = 40
+
+
+def _build_queries(profile: dict, locations: list[str]) -> list[tuple]:
+    """
+    Build search queries from the candidate profile.
+    Remote locations are searched first, Bangalore as fallback.
+    """
+    role = profile.get("current_role", "AI Engineer")
+
+    base_queries = [
+        f"{role}",
+        "Generative AI Engineer",
+        "AI ML Engineer LLM",
+        "Machine Learning Engineer LLM RAG",
+    ]
+
+    queries = []
+    for loc in locations:
+        for q in base_queries:
+            # Append "remote" to query string for remote locations
+            if "remote" in loc.lower():
+                queries.append((f"{q} remote", loc))
+            else:
+                queries.append((q, loc))
+    return queries
+
+
+def _fetch_jobs(query: str, location: str) -> list[dict]:
+    """Fetch jobs from Google Jobs via SerpAPI for a single query+location."""
+    if not SERP_API_KEY:
+        raise ValueError("SERP_API_KEY environment variable not set.")
+
+    is_remote = "remote" in location.lower()
+    params = {
+        "engine":           "google_jobs",
+        "q":                query,
+        "location":         location,
+        "hl":               "en",
+        "api_key":          SERP_API_KEY,
+    }
+    if is_remote:
+        params["ltype"] = "1"   # Google Jobs filter: remote only
+
+    search  = GoogleSearch(params)
+    results = search.get_dict()
+    return results.get("jobs_results", [])
+
+
+def _parse_job(raw: dict) -> dict:
+    """Normalize a raw SerpAPI job result into our schema."""
+    description = raw.get("description", "")
+
+    # Some jobs have structured highlights — append them to description
+    highlights = raw.get("job_highlights", [])
+    for h in highlights:
+        title = h.get("title", "")
+        items = h.get("items", [])
+        description += f"\n\n{title}:\n" + "\n".join(f"- {i}" for i in items)
+
+    apply_link = ""
+    for opt in raw.get("apply_options", []):
+        if opt.get("link"):
+            apply_link = opt["link"]
+            break
+
+    return {
+        "title":       raw.get("title", ""),
+        "company":     raw.get("company_name", ""),
+        "location":    raw.get("location", ""),
+        "posted_via":  raw.get("via", ""),
+        "description": description.strip(),
+        "apply_link":  apply_link,
+        "score":       None,
+        "verdict":     None,
+        "matched_skills":  [],
+        "missing_skills":  [],
+        "recommendation":  "",
+    }
+
+
+def search_and_rank(
+    profile: dict,
+    locations: list[str] | None = None,
+    top_n: int = 10,
+    min_score: int = MIN_SCORE,
+) -> list[dict]:
+    """
+    Search Google Jobs for roles matching the profile, score each, return ranked list.
+
+    Args:
+        profile:   Parsed resume profile dict (from parser.py)
+        locations: List of locations to search. Defaults to Bangalore + Remote.
+        top_n:     Return top N results after scoring.
+        min_score: Drop results below this score.
+
+    Returns:
+        List of job dicts sorted by score descending.
+    """
+    if locations is None:
+        # Remote-first: US remote, then global remote, Bangalore as fallback
+        locations = [
+            "Remote",          # global remote (includes US remote postings)
+            "United States",   # US-based remote/hybrid
+            "Bangalore, India",
+        ]
+
+    queries = _build_queries(profile, locations)
+
+    # Fetch + deduplicate by (title, company)
+    seen   = set()
+    jobs   = []
+    for query, location in queries:
+        print(f"  Searching: '{query}' in {location} ...", flush=True)
+        try:
+            raw_jobs = _fetch_jobs(query, location)
+            for raw in raw_jobs:
+                job = _parse_job(raw)
+                key = (job["title"].lower(), job["company"].lower())
+                if key not in seen and job["description"]:
+                    seen.add(key)
+                    jobs.append(job)
+            time.sleep(0.5)  # be polite to the API
+        except Exception as e:
+            print(f"    [error] {e}", flush=True)
+
+    print(f"\nFetched {len(jobs)} unique jobs. Scoring...\n", flush=True)
+
+    # Score each job
+    for i, job in enumerate(jobs, 1):
+        print(f"  [{i}/{len(jobs)}] {job['company']} — {job['title']} ...", end=" ", flush=True)
+        try:
+            result = score_job(profile, job["description"])
+            job["score"]           = result["overall_score"]
+            job["verdict"]         = result["verdict"]
+            job["matched_skills"]  = result.get("matched_skills", [])
+            job["missing_skills"]  = result.get("missing_skills", [])
+            job["recommendation"]  = result.get("recommendation", "")
+            job["breakdown"]       = result.get("breakdown", {})
+            print(f"{job['score']}/100  [{job['verdict']}]", flush=True)
+        except Exception as e:
+            print(f"error: {e}", flush=True)
+            job["score"] = 0
+
+        time.sleep(0.3)
+
+    # Filter + sort
+    ranked = sorted(
+        [j for j in jobs if (j["score"] or 0) >= min_score],
+        key=lambda j: j["score"],
+        reverse=True,
+    )
+    return ranked[:top_n]

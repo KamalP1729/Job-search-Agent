@@ -1,0 +1,20 @@
+Company: Smallest.ai
+Role: Founding Data Scientist
+Location: Bangalore, India
+Compensation: ₹60–80L
+
+About: Smallest.ai builds speech and voice AI — ultra-low latency text-to-speech and voice cloning technology. Used by developers building voice products.
+
+Responsibilities:
+- Build and fine-tune speech/voice ML models
+- Work on TTS (text-to-speech), voice cloning, and audio generation
+- Evaluate model quality using perceptual and objective metrics
+- Build data pipelines for audio data collection and processing
+- Own ML research and productionization end-to-end
+
+Requirements:
+- Strong ML/deep learning experience
+- Experience with audio ML, TTS, or speech processing
+- PyTorch, Hugging Face
+- Fine-tuning experience
+- Python and production ML deployment
