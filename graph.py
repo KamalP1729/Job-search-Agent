@@ -210,8 +210,8 @@ def route_after_search(state: JobAgentState) -> str:
 def route_after_recruiters(state: JobAgentState) -> str:
     recruiters = state.get("recruiters", [])
     if not recruiters:
-        print("  No recruiter contacts found — stopping.")
-        return "failed"
+        print("  No recruiter contacts found — skipping email draft step.")
+        return "no_emails"
     return "draft_emails"
 
 def route_after_drafts(state: JobAgentState) -> str:
@@ -244,7 +244,7 @@ def build_graph():
     builder.add_conditional_edges("search_jobs",     route_after_search,
                                   {"find_recruiters": "find_recruiters", "failed": END})
     builder.add_conditional_edges("find_recruiters", route_after_recruiters,
-                                  {"draft_emails": "draft_emails", "failed": END})
+                                  {"draft_emails": "draft_emails", "no_emails": END, "failed": END})
     builder.add_conditional_edges("draft_emails",    route_after_drafts,
                                   {"human_review": "human_review", "failed": END})
 
