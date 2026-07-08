@@ -16,15 +16,17 @@ Public API:
 import math
 import time
 import logging
-import litellm
+from draup_packages.draup_llm_manager import DraupLLMManager
 
 from config import EMBED_MODEL, EMBED_DIMENSIONS, MAX_RETRIES, RETRY_DELAY
+from config import DRAUP_LLM_ENV, DRAUP_LLM_USER, DRAUP_LLM_PROVIDER
 from guardrails import get_logger
 
 logger = get_logger("embedder")
 
-# Suppress LiteLLM noise
 logging.getLogger("LiteLLM").setLevel(logging.CRITICAL)
+
+_llm = DraupLLMManager(env=DRAUP_LLM_ENV, user=DRAUP_LLM_USER, llm_provider=DRAUP_LLM_PROVIDER)
 
 
 # ── PROFILE → TEXT ─────────────────────────────────────────────────────────────
@@ -97,7 +99,7 @@ def embed_text(text: str) -> list[float]:
     last_exc = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
-            response = litellm.embedding(
+            response = _llm.embedding(
                 model=EMBED_MODEL,
                 input=[text],
                 dimensions=EMBED_DIMENSIONS,
