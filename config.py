@@ -16,3 +16,14 @@ VERDICT_THRESHOLDS = {
 # Retry settings for API calls
 MAX_RETRIES = 3
 RETRY_DELAY = 2  # seconds (doubles each retry)
+
+# ── Semantic matching (feature/semantic-matching branch) ───────────────────────
+EMBED_MODEL = "gemini/text-embedding-004"   # Gemini embedding model via LiteLLM
+EMBED_DIMENSIONS = 768                       # supported: 768 or 256
+
+# Jobs below this semantic score are dropped before LLM scoring (saves API calls)
+SEMANTIC_FILTER_THRESHOLD = 50
+
+# Hybrid final score weights (must sum to 1.0)
+SEMANTIC_WEIGHT  = 0.35
+LLM_SCORE_WEIGHT = 0.65

@@ -54,11 +54,11 @@ def node_parse_resume(state: JobAgentState) -> dict:
 # ── NODE: search_jobs ─────────────────────────────────────────────────────────
 
 def node_search_jobs(state: JobAgentState) -> dict:
-    print("\n[2/6] JobSearchAgent — searching and scoring jobs...")
-    from job_search import search_and_rank
+    print("\n[2/6] JobSearchAgent — searching and scoring jobs (semantic + LLM hybrid)...")
+    from semantic_job_search import search_and_rank_semantic
 
     try:
-        jobs = search_and_rank(
+        jobs = search_and_rank_semantic(
             profile=state["profile"],
             locations=state.get("locations"),
             top_n=state.get("top_n", 10),
