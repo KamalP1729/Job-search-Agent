@@ -18,10 +18,33 @@ RESULTS_PER_QUERY = 10
 MIN_SCORE = 40
 
 
+# Keywords in job description that indicate visa sponsorship or on-site requirement.
+# Jobs matching these are dropped for international remote-only candidates.
+_VISA_REQUIRED_PATTERNS = [
+    "must be authorized to work in the us",
+    "must be legally authorized",
+    "no visa sponsorship",
+    "will not sponsor",
+    "sponsorship not available",
+    "sponsorship is not available",
+    "must have us citizenship",
+    "us citizen only",
+    "security clearance required",
+    "active secret clearance",
+    "active top secret",
+    "requires us citizenship",
+]
+
+# Location strings that signal on-site / in-office work
+_ONSITE_LOCATION_SIGNALS = [
+    "on-site", "onsite", "on site", "in-office", "in office",
+]
+
+
 def _build_queries(profile: dict, locations: list[str]) -> list[tuple]:
     """
     Build search queries from the candidate profile.
-    Remote locations are searched first, Bangalore as fallback.
+    US locations always get "remote" appended — we only want remote-eligible roles.
     """
     role = profile.get("current_role", "AI Engineer")
 
@@ -34,13 +57,34 @@ def _build_queries(profile: dict, locations: list[str]) -> list[tuple]:
 
     queries = []
     for loc in locations:
+        is_us     = any(k in loc.lower() for k in ["united states", "us", "usa"])
+        is_remote = "remote" in loc.lower()
+
         for q in base_queries:
-            # Append "remote" to query string for remote locations
-            if "remote" in loc.lower():
+            # Always add "remote" for US locations — avoids on-site results
+            if is_remote or is_us:
                 queries.append((f"{q} remote", loc))
             else:
                 queries.append((q, loc))
     return queries
+
+
+def _requires_visa(job: dict) -> bool:
+    """
+    Return True if the job description signals it requires US work authorization
+    or an on-site presence — both are blockers for an international remote candidate.
+    """
+    desc     = (job.get("description") or "").lower()
+    location = (job.get("location") or "").lower()
+
+    if any(pattern in desc for pattern in _VISA_REQUIRED_PATTERNS):
+        return True
+
+    # Drop jobs whose location string says on-site (not remote)
+    if any(signal in location for signal in _ONSITE_LOCATION_SIGNALS):
+        return True
+
+    return False
 
 
 def _fetch_jobs(query: str, location: str) -> list[dict]:
@@ -48,15 +92,18 @@ def _fetch_jobs(query: str, location: str) -> list[dict]:
     if not SERP_API_KEY:
         raise ValueError("SERP_API_KEY environment variable not set.")
 
+    # Always request remote filter for US searches
+    is_us     = any(k in location.lower() for k in ["united states", "us", "usa"])
     is_remote = "remote" in location.lower()
+
     params = {
-        "engine":           "google_jobs",
-        "q":                query,
-        "location":         location,
-        "hl":               "en",
-        "api_key":          SERP_API_KEY,
+        "engine":   "google_jobs",
+        "q":        query,
+        "location": location,
+        "hl":       "en",
+        "api_key":  SERP_API_KEY,
     }
-    if is_remote:
+    if is_remote or is_us:
         params["ltype"] = "1"   # Google Jobs filter: remote only
 
     search  = GoogleSearch(params)
@@ -81,11 +128,17 @@ def _parse_job(raw: dict) -> dict:
             apply_link = opt["link"]
             break
 
+    extensions   = raw.get("detected_extensions", {})
+    posted_at    = extensions.get("posted_at", "")        # e.g. "3 days ago"
+    schedule     = extensions.get("schedule_type", "")    # e.g. "Full-time"
+
     return {
         "title":       raw.get("title", ""),
         "company":     raw.get("company_name", ""),
         "location":    raw.get("location", ""),
         "posted_via":  raw.get("via", ""),
+        "posted_at":   posted_at,
+        "schedule":    schedule,
         "description": description.strip(),
         "apply_link":  apply_link,
         "score":       None,
@@ -135,6 +188,9 @@ def search_and_rank(
                 job = _parse_job(raw)
                 key = (job["title"].lower(), job["company"].lower())
                 if key not in seen and job["description"]:
+                    if _requires_visa(job):
+                        print(f"    [skipped] {job['company']} — {job['title']} (visa/on-site required)", flush=True)
+                        continue
                     seen.add(key)
                     jobs.append(job)
             time.sleep(0.5)  # be polite to the API
