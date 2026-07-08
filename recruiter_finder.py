@@ -4,6 +4,7 @@ Falls back to Apollo enrichment if Hunter finds nothing.
 """
 
 import os
+import re
 import json
 import requests
 
@@ -42,6 +43,28 @@ COMPANY_DOMAINS = {
     "palladio":    "palladio.ai",
     "zenskar":     "zenskar.com",
 }
+
+
+_STRIP_SUFFIXES = re.compile(
+    r"\b(inc\.?|llc\.?|ltd\.?|corp\.?|co\.?|pvt\.?|group|technologies|"
+    r"technology|tech|solutions|systems|labs?|services|consulting|global|"
+    r"international|enterprises?|ventures?|innovation|networks?)\b",
+    re.IGNORECASE,
+)
+
+_TLDS_TO_TRY = [".com", ".io", ".ai", ".co"]
+
+
+def _guess_domains(company: str) -> list[str]:
+    """
+    Return a prioritised list of likely domains for a company name.
+    E.g. "DigitalXNode" → ["digitalxnode.com", "digitalxnode.io", "digitalxnode.ai"]
+    """
+    cleaned = _STRIP_SUFFIXES.sub("", company)
+    slug = re.sub(r"[^a-z0-9]", "", cleaned.lower())
+    if not slug:
+        slug = re.sub(r"[^a-z0-9]", "", company.lower())
+    return [f"{slug}{tld}" for tld in _TLDS_TO_TRY if slug]
 
 
 def _is_target(title: str | None) -> bool:
@@ -104,16 +127,32 @@ def find_by_domain(domain: str) -> dict:
 def find_contacts(company: str, domain: str | None = None) -> dict:
     """
     Find recruiter/founder contacts for a company.
-    Looks up domain from built-in map if not provided.
+    Priority: explicit domain > COMPANY_DOMAINS map > inferred domain candidates.
     """
     if not domain:
         domain = COMPANY_DOMAINS.get(company.lower().split()[0])
-    if not domain:
-        return {"company": company, "error": "Domain not found — add to COMPANY_DOMAINS"}
 
-    result         = find_by_domain(domain)
-    result["company"] = company
-    return result
+    if domain:
+        result = find_by_domain(domain)
+        result["company"] = company
+        return result
+
+    candidates = _guess_domains(company)
+    for candidate in candidates:
+        try:
+            result = find_by_domain(candidate)
+            if result.get("contacts") or result.get("total_found", 0) > 0:
+                result["company"] = company
+                return result
+        except Exception:
+            continue
+
+    tried = ", ".join(candidates)
+    return {
+        "company": company,
+        "contacts": [],
+        "error": f"No contacts found (tried: {tried})",
+    }
 
 
 def find_all(companies: list[str]) -> list[dict]:
