@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { streamRun } from "../../../lib/api";
 
 const STEPS = ["Parse Resume", "Search Jobs", "Find Recruiters", "Draft Emails", "Review", "Send"];
@@ -96,7 +96,13 @@ function JobCard({ job, rank }: { job: any; rank: number }) {
               <span className="text-white/60 text-sm">{job.title}</span>
             )}
           </div>
-          <p className="text-xs text-white/35 mt-0.5">{job.location}</p>
+          <p className="text-xs text-white/35 mt-0.5 flex items-center gap-2">
+            <span>{job.location}</span>
+            {job.posted_at && <span className="text-white/20">·</span>}
+            {job.posted_at && <span>{job.posted_at}</span>}
+            {job.schedule && <span className="text-white/20">·</span>}
+            {job.schedule && <span>{job.schedule}</span>}
+          </p>
         </div>
         <VerdictPill verdict={job.verdict ?? ""} />
         <svg
@@ -169,8 +175,8 @@ function JobCard({ job, rank }: { job: any; rank: number }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function RunPage({ params }: { params: any }) {
-  const runId: string = params.runId;
+export default function RunPage({ params }: { params: Promise<{ runId: string }> }) {
+  const { runId } = use(params);
 
   const [logs, setLogs]               = useState<{ time: string; msg: string }[]>([]);
   const [currentStep, setCurrentStep] = useState(0);
