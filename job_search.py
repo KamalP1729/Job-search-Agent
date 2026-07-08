@@ -4,6 +4,7 @@ and returns a ranked list of matching jobs.
 """
 
 import os
+import re
 import json
 import time
 from serpapi import GoogleSearch
@@ -67,6 +68,50 @@ def _build_queries(profile: dict, locations: list[str]) -> list[tuple]:
             else:
                 queries.append((q, loc))
     return queries
+
+
+def _extract_required_yoe(description: str) -> tuple[float, float] | None:
+    """
+    Extract min/max required YOE from a job description using regex.
+    Returns (min_yoe, max_yoe) or None if no YOE requirement found.
+    """
+    desc = description.lower()
+
+    match = re.search(r"(\d+)\+\s*years?(?:\s+of)?(?:\s+experience)?", desc)
+    if match:
+        n = float(match.group(1))
+        return (n, n + 5)
+
+    match = re.search(r"(\d+)\s*[-\u2013to]+\s*(\d+)\s*years?(?:\s+of)?(?:\s+experience)?", desc)
+    if match:
+        return (float(match.group(1)), float(match.group(2)))
+
+    match = re.search(r"(?:minimum|at least|minimum of)\s+(\d+)\s*years?", desc)
+    if match:
+        n = float(match.group(1))
+        return (n, n + 5)
+
+    return None
+
+
+def _yoe_mismatch(job: dict, candidate_yoe: float, tolerance: float = 2.0) -> bool:
+    """
+    Return True if the job's required YOE is too far from the candidate's YOE.
+    tolerance=2.0 means ±2 years from your actual YOE is acceptable.
+    """
+    yoe_range = _extract_required_yoe(job.get("description", ""))
+    if yoe_range is None:
+        return False
+
+    min_req, max_req = yoe_range
+
+    if min_req > candidate_yoe + tolerance:
+        return True
+
+    if max_req < candidate_yoe - tolerance and max_req < 1:
+        return True
+
+    return False
 
 
 def _requires_visa(job: dict) -> bool:
@@ -190,6 +235,9 @@ def search_and_rank(
                 if key not in seen and job["description"]:
                     if _requires_visa(job):
                         print(f"    [skipped] {job['company']} — {job['title']} (visa/on-site required)", flush=True)
+                        continue
+                    if _yoe_mismatch(job, profile.get("total_yoe", 0)):
+                        print(f"    [skipped] {job['company']} — {job['title']} (YOE mismatch)", flush=True)
                         continue
                     seen.add(key)
                     jobs.append(job)
