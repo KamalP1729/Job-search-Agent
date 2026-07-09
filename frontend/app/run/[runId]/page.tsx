@@ -233,24 +233,33 @@ export default function RunPage({ params }: { params: Promise<{ runId: string }>
     }
   };
 
-  // On mount, check if this run already reached awaiting_review (handles page refresh / double SSE connect)
+  // Poll state endpoint every 4s — catches awaiting_review even if SSE double-connect missed it
   useEffect(() => {
-    fetch(`http://localhost:8000/api/runs/${runId}/state`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((state) => {
-        if (!state) return;
-        const draftsFromState = state.email_drafts ?? [];
-        const jobsFromState   = state.jobs ?? [];
-        const profile         = state.profile ?? null;
-        if (draftsFromState.length > 0) {
-          setDrafts(draftsFromState);
-          setStatus("awaiting_review");
-          setCurrentStep(4);
-        }
-        if (jobsFromState.length > 0) setJobs(jobsFromState);
-        if (profile) setProfile(profile);
-      })
-      .catch(() => {/* run not found yet — ignore */});
+    let stopped = false;
+    const poll = async () => {
+      while (!stopped) {
+        try {
+          const r = await fetch(`http://localhost:8000/api/runs/${runId}/state`);
+          if (r.ok) {
+            const state = await r.json();
+            const draftsFromState = state.email_drafts ?? [];
+            const jobsFromState   = state.jobs ?? [];
+            const profileFromState = state.profile ?? null;
+            if (jobsFromState.length > 0) setJobs(jobsFromState);
+            if (profileFromState) setProfile(profileFromState);
+            if (draftsFromState.length > 0) {
+              setDrafts(draftsFromState);
+              setStatus("awaiting_review");
+              setCurrentStep(4);
+              break; // stop polling once we have drafts
+            }
+          }
+        } catch { /* ignore */ }
+        await new Promise((res) => setTimeout(res, 4000));
+      }
+    };
+    poll();
+    return () => { stopped = true; };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId]);
 
