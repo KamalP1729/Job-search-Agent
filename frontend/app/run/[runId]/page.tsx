@@ -233,6 +233,27 @@ export default function RunPage({ params }: { params: Promise<{ runId: string }>
     }
   };
 
+  // On mount, check if this run already reached awaiting_review (handles page refresh / double SSE connect)
+  useEffect(() => {
+    fetch(`http://localhost:8000/api/runs/${runId}/state`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((state) => {
+        if (!state) return;
+        const draftsFromState = state.email_drafts ?? [];
+        const jobsFromState   = state.jobs ?? [];
+        const profile         = state.profile ?? null;
+        if (draftsFromState.length > 0) {
+          setDrafts(draftsFromState);
+          setStatus("awaiting_review");
+          setCurrentStep(4);
+        }
+        if (jobsFromState.length > 0) setJobs(jobsFromState);
+        if (profile) setProfile(profile);
+      })
+      .catch(() => {/* run not found yet — ignore */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [runId]);
+
   useEffect(() => {
     const cleanup = streamRun(runId, handleEvent);
     return cleanup;

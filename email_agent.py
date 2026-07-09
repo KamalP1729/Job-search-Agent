@@ -32,34 +32,52 @@ _llm = DraupLLMManager(env=DRAUP_LLM_ENV, user=DRAUP_LLM_USER, llm_provider=DRAU
 GMAIL_USER         = os.environ.get("GMAIL_USER", "")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "")
 
-DRAFT_PROMPT = """\
-You are writing a cold outreach email from a job seeker to a founder/recruiter.
+ANALYSIS_PROMPT = """\
+You are helping a job seeker write a targeted cold email. Analyze this job description and candidate profile to extract the most relevant connection points.
 
 CANDIDATE PROFILE:
 {profile}
 
-JOB THEY ARE APPLYING FOR:
-- Company: {company}
-- Role: {job_title}
-- Score match: {score}/100
-- Matched skills: {matched_skills}
+JOB DESCRIPTION:
+{jd}
 
-RECIPIENT:
-- Name: {contact_name}
-- Title: {contact_title}
-- Company: {company}
+Extract and return ONLY a valid JSON object — no markdown fences:
+{{
+  "company_signal": "1 sentence: what is this company building / their core product or mission, based on the JD",
+  "top_requirements": ["the 2-3 JD requirements that best match the candidate's actual experience"],
+  "candidate_hook": "1 sentence: the single most impressive/relevant thing the candidate has done that maps to this role"
+}}
+"""
 
-Write a SHORT, personalized cold email (max 4 sentences in the body). Rules:
-- Open with one specific thing about what {company} is building
-- Mention 2 matched skills that are directly relevant to the role
-- End with a specific ask (15-min call or reviewing the resume)
-- Do NOT use buzzwords like "passionate", "excited", "leverage"
-- Sound like a human, not a template
+DRAFT_PROMPT = """\
+You are writing a cold outreach email from a job seeker to a founder/recruiter.
+
+CANDIDATE:
+- Name: {name}
+- Role: {current_role}
+- YOE: {total_yoe} years
+
+ROLE: {job_title} at {company} (match score: {score}/100)
+
+RECIPIENT: {contact_name} ({contact_title})
+
+JD ANALYSIS (use this to personalize — do NOT copy verbatim):
+- What they're building: {company_signal}
+- Requirements that match candidate: {top_requirements}
+- Candidate's strongest hook for this role: {candidate_hook}
+
+Write a SHORT cold email (max 4 sentences in the body). Rules:
+- First sentence: reference what {company} is specifically building (from JD analysis)
+- Second sentence: connect candidate's hook to a specific requirement
+- Third sentence: one concrete proof point (metric, project, or result)
+- Final sentence: specific ask (15-min call or to share resume)
+- Do NOT use: "passionate", "excited", "leverage", "synergy", "dynamic"
+- Sound like a human writing to a specific person, not a template
 - Keep total body under 100 words
 
 Return ONLY a valid JSON object — no markdown fences:
 {{
-  "subject": "email subject line",
+  "subject": "email subject line (specific, not generic)",
   "body": "full email body including greeting and sign-off"
 }}
 """
@@ -73,35 +91,81 @@ def _strip_fences(text: str) -> str:
     return text
 
 
+def _analyze_jd(profile: dict, job: dict) -> dict:
+    """
+    Step 1 (agentic): Read the actual JD and extract what the company is building,
+    which requirements match the candidate, and the candidate's strongest hook.
+    Falls back to basic info on failure.
+    """
+    jd_text = (job.get("description") or "")[:4000]  # cap to avoid huge prompts
+    profile_summary = json.dumps({
+        "name":         profile.get("name"),
+        "current_role": profile.get("current_role"),
+        "total_yoe":    profile.get("total_yoe"),
+        "skills":       profile.get("skills", [])[:15],
+        "tools":        profile.get("tools", [])[:15],
+        "roles":        [
+            f"{r.get('title')} at {r.get('company')}"
+            for r in profile.get("roles", [])[:3]
+        ],
+    }, indent=2)
+
+    try:
+        res = _llm.completion(
+            model=SCORE_MODEL,
+            messages=[{"role": "user", "content": ANALYSIS_PROMPT.format(
+                profile=profile_summary,
+                jd=jd_text,
+            )}],
+        )
+        track_token_usage("analyze_jd", res)
+        raw = json.loads(_strip_fences(res.choices[0].message.content.strip()))
+        return raw
+    except Exception as e:
+        logger.warning("JD analysis failed for %s: %s — using fallback", job.get("company"), e)
+        return {
+            "company_signal": f"{job.get('company')} is hiring for {job.get('title')}",
+            "top_requirements": job.get("matched_skills", [])[:3],
+            "candidate_hook": f"{profile.get('current_role')} with {profile.get('total_yoe')} YOE",
+        }
+
+
 def draft_outreach(profile: dict, job: dict, contact: dict) -> dict:
     """
     Draft a personalized outreach email for a job + contact.
+
+    Two-step agentic flow:
+      1. _analyze_jd() — reads the actual JD, extracts company signal + matching requirements
+      2. DRAFT_PROMPT — writes email grounded in that analysis (not just skill names)
+
     Returns a validated dict with to_email, subject, body, guardrail_warnings, etc.
     """
-    matched_skills = ", ".join(job.get("matched_skills", [])[:5]) or "relevant skills"
+    # Step 1: Analyze JD against profile
+    logger.info("Analyzing JD for %s — %s", job.get("company"), job.get("title"))
+    analysis = _analyze_jd(profile, job)
 
+    top_req = analysis.get("top_requirements", [])
+    top_req_str = "; ".join(top_req) if isinstance(top_req, list) else str(top_req)
+
+    # Step 2: Draft email grounded in the analysis
     prompt = DRAFT_PROMPT.format(
-        profile=json.dumps({
-            "name":         profile.get("name"),
-            "current_role": profile.get("current_role"),
-            "total_yoe":    profile.get("total_yoe"),
-            "skills":       profile.get("skills", [])[:10],
-            "tools":        profile.get("tools", [])[:10],
-        }, indent=2),
+        name=profile.get("name", ""),
+        current_role=profile.get("current_role", ""),
+        total_yoe=profile.get("total_yoe", ""),
         company=job.get("company", ""),
         job_title=job.get("title", ""),
         score=job.get("score", ""),
-        matched_skills=matched_skills,
         contact_name=contact.get("name", "there"),
         contact_title=contact.get("title", ""),
+        company_signal=analysis.get("company_signal", ""),
+        top_requirements=top_req_str,
+        candidate_hook=analysis.get("candidate_hook", ""),
     )
 
     res = _llm.completion(
         model=SCORE_MODEL,
         messages=[{"role": "user", "content": prompt}],
     )
-
-    # Guardrail: track token usage
     track_token_usage("draft_email", res)
 
     content = res.choices[0].message.content.strip()
