@@ -74,18 +74,24 @@ def _extract_required_yoe(description: str) -> tuple[float, float] | None:
     """
     Extract min/max required YOE from a job description using regex.
     Returns (min_yoe, max_yoe) or None if no YOE requirement found.
+
+    Handles patterns like:
+      "5+ years", "3-5 years", "minimum 4 years", "at least 6 years of experience"
     """
     desc = description.lower()
 
+    # Pattern: "X+ years" or "X or more years"
     match = re.search(r"(\d+)\+\s*years?(?:\s+of)?(?:\s+experience)?", desc)
     if match:
         n = float(match.group(1))
-        return (n, n + 5)
+        return (n, n + 5)   # treat "5+" as 5–10
 
-    match = re.search(r"(\d+)\s*[-\u2013to]+\s*(\d+)\s*years?(?:\s+of)?(?:\s+experience)?", desc)
+    # Pattern: "X-Y years" or "X to Y years"
+    match = re.search(r"(\d+)\s*[-–to]+\s*(\d+)\s*years?(?:\s+of)?(?:\s+experience)?", desc)
     if match:
         return (float(match.group(1)), float(match.group(2)))
 
+    # Pattern: "minimum X years" / "at least X years"
     match = re.search(r"(?:minimum|at least|minimum of)\s+(\d+)\s*years?", desc)
     if match:
         n = float(match.group(1))
@@ -97,27 +103,37 @@ def _extract_required_yoe(description: str) -> tuple[float, float] | None:
 def _yoe_mismatch(job: dict, candidate_yoe: float, tolerance: float = 2.0) -> bool:
     """
     Return True if the job's required YOE is too far from the candidate's YOE.
+
+    Rules:
+      - If job requires more than candidate_yoe + tolerance → too senior, skip
+      - If job requires less than candidate_yoe - tolerance → too junior, skip
+        (unless it's entry-level, in which case we keep it)
+      - If no YOE requirement found → keep the job (give benefit of doubt)
+
     tolerance=2.0 means ±2 years from your actual YOE is acceptable.
     """
     yoe_range = _extract_required_yoe(job.get("description", ""))
     if yoe_range is None:
-        return False
+        return False   # no requirement stated — keep the job
 
     min_req, max_req = yoe_range
 
+    # Too senior: job requires more experience than candidate has (+ tolerance)
     if min_req > candidate_yoe + tolerance:
         return True
 
+    # Too junior: job caps out well below candidate's experience
+    # Only skip if max_req < 1 year (truly entry-level) and candidate has 3+ YOE
     if max_req < candidate_yoe - tolerance and max_req < 1:
         return True
 
     return False
 
 
-def _is_stale(job: dict, max_days: int = 30) -> bool:
+def _is_stale(job: dict, max_days: int = 60) -> bool:
     """
     Return True if the job was posted more than max_days ago.
-    Parses SerpAPI relative strings: "3 days ago", "1 week ago", "2 months ago".
+    Parses SerpAPI's relative strings: "3 days ago", "1 week ago", "2 months ago".
     Jobs with no posted_at are kept (benefit of the doubt).
     """
     posted = (job.get("posted_at") or "").lower().strip()
@@ -244,6 +260,7 @@ def search_and_rank(
     # Fetch + deduplicate by (title, company)
     seen   = set()
     jobs   = []
+    _counts = {"visa": 0, "yoe": 0, "stale": 0, "dup": 0}
     for query, location in queries:
         print(f"  Searching: '{query}' in {location} ...", flush=True)
         try:
@@ -251,23 +268,33 @@ def search_and_rank(
             for raw in raw_jobs:
                 job = _parse_job(raw)
                 key = (job["title"].lower(), job["company"].lower())
-                if key not in seen and job["description"]:
-                    if _requires_visa(job):
-                        print(f"    [skipped] {job['company']} — {job['title']} (visa/on-site required)", flush=True)
-                        continue
-                    if _yoe_mismatch(job, profile.get("total_yoe", 0)):
-                        print(f"    [skipped] {job['company']} — {job['title']} (YOE mismatch)", flush=True)
-                        continue
-                    if _is_stale(job):
-                        print(f"    [skipped] {job['company']} — {job['title']} (posted {job.get('posted_at', '?')})", flush=True)
-                        continue
-                    seen.add(key)
-                    jobs.append(job)
+                if key in seen or not job["description"]:
+                    _counts["dup"] += 1
+                    continue
+                if _requires_visa(job):
+                    print(f"    [visa]  {job['company']} — {job['title']}", flush=True)
+                    _counts["visa"] += 1
+                    continue
+                if _yoe_mismatch(job, profile.get("total_yoe", 0)):
+                    print(f"    [yoe]   {job['company']} — {job['title']}", flush=True)
+                    _counts["yoe"] += 1
+                    continue
+                if _is_stale(job):
+                    print(f"    [stale] {job['company']} — {job['title']} ({job.get('posted_at', '?')})", flush=True)
+                    _counts["stale"] += 1
+                    continue
+                seen.add(key)
+                jobs.append(job)
             time.sleep(0.5)  # be polite to the API
         except Exception as e:
             print(f"    [error] {e}", flush=True)
 
-    print(f"\nFetched {len(jobs)} unique jobs. Scoring...\n", flush=True)
+    print(
+        f"\nFilter summary — visa: {_counts['visa']} | yoe: {_counts['yoe']} | "
+        f"stale: {_counts['stale']} | dup: {_counts['dup']} | kept: {len(jobs)}",
+        flush=True,
+    )
+    print(f"Fetched {len(jobs)} unique jobs. Scoring...\n", flush=True)
 
     # Score each job
     for i, job in enumerate(jobs, 1):
