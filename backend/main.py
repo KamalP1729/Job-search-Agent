@@ -189,6 +189,45 @@ async def send_approved(run_id: str, request: Request):
     return {"sent": sent_count, "errors": errors}
 
 
+@app.post("/api/runs/{run_id}/redraft")
+async def redraft_emails(run_id: str):
+    """
+    Re-run email drafting using stored jobs + recruiters from a previous run.
+    Skips job search and scoring entirely — only re-calls draft_outreach().
+    """
+    if run_id not in run_data:
+        raise HTTPException(status_code=404, detail="Run not found")
+
+    state = run_data[run_id].get("state", {})
+    profile    = state.get("profile", {})
+    jobs       = state.get("jobs", [])
+    recruiters = state.get("recruiters", [])
+
+    if not jobs:
+        raise HTTPException(status_code=400, detail="No jobs in stored state — run the pipeline first")
+
+    contact_map = {r["company"]: r["contacts"] for r in recruiters}
+
+    from email_agent import draft_outreach
+    drafts = []
+    errors = []
+    for job in jobs:
+        contacts = contact_map.get(job["company"], [])
+        if not contacts:
+            continue
+        contact = contacts[0]
+        try:
+            draft = await asyncio.to_thread(draft_outreach, profile, job, contact)
+            drafts.append(draft)
+        except Exception as e:
+            errors.append(f"{job['company']}: {e}")
+
+    # Store updated drafts back into state
+    run_data[run_id]["state"]["email_drafts"] = drafts
+
+    return {"drafts": drafts, "errors": errors}
+
+
 @app.get("/api/auth/gmail")
 async def gmail_auth(session_id: str = ""):
     """

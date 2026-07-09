@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { sendApproved } from "../../../../lib/api";
 
 function ScoreBadge({ score }: { score: number }) {
@@ -34,8 +34,8 @@ function WordCount({ body }: { body: string }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default function ReviewPage({ params }: { params: any }) {
-  const runId: string = params.runId;
+export default function ReviewPage({ params }: { params: Promise<{ runId: string }> }) {
+  const { runId } = use(params);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [drafts, setDrafts]       = useState<any[]>([]);
@@ -43,9 +43,10 @@ export default function ReviewPage({ params }: { params: any }) {
   const [subjects, setSubjects]   = useState<string[]>([]);
   const [bodies, setBodies]       = useState<string[]>([]);
   const [sessionId, setSessionId] = useState("");
-  const [sending, setSending]     = useState(false);
-  const [result, setResult]       = useState<string | null>(null);
-  const [sendError, setSendError] = useState<string | null>(null);
+  const [sending, setSending]       = useState(false);
+  const [redrafting, setRedrafting] = useState(false);
+  const [result, setResult]         = useState<string | null>(null);
+  const [sendError, setSendError]   = useState<string | null>(null);
 
   useEffect(() => {
     try {
@@ -80,6 +81,29 @@ export default function ReviewPage({ params }: { params: any }) {
 
   const updateBody = (idx: number, val: string) =>
     setBodies((prev) => { const n = [...prev]; n[idx] = val; return n; });
+
+  const handleRedraft = async () => {
+    setRedrafting(true);
+    setSendError(null);
+    try {
+      const res = await fetch(`http://localhost:8000/api/runs/${runId}/redraft`, { method: "POST" });
+      if (!res.ok) throw new Error(await res.text());
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = await res.json();
+      const newDrafts = data.drafts ?? [];
+      setDrafts(newDrafts);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setSubjects(newDrafts.map((d: any) => d.subject ?? ""));
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      setBodies(newDrafts.map((d: any) => d.body ?? ""));
+      setApproved(new Set());
+      sessionStorage.setItem("job_agent_drafts", JSON.stringify(newDrafts));
+    } catch (err: unknown) {
+      setSendError(err instanceof Error ? err.message : "Re-draft failed.");
+    } finally {
+      setRedrafting(false);
+    }
+  };
 
   const handleSend = async () => {
     if (approved.size === 0) return;
@@ -145,7 +169,7 @@ export default function ReviewPage({ params }: { params: any }) {
 
         {/* Bulk actions */}
         {!result && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={approveAll}
               className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.10] px-4 py-2 text-sm text-emerald-400 font-medium transition-all flex items-center gap-1.5"
@@ -160,6 +184,28 @@ export default function ReviewPage({ params }: { params: any }) {
               className="bg-white/[0.06] border border-white/[0.10] hover:bg-white/[0.10] rounded-xl px-4 py-2 text-sm text-white/50 font-medium transition-all"
             >
               Clear all
+            </button>
+            <button
+              onClick={handleRedraft}
+              disabled={redrafting}
+              className="ml-auto rounded-xl border border-indigo-500/20 bg-indigo-500/[0.06] hover:bg-indigo-500/[0.10] disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2 text-sm text-indigo-400 font-medium transition-all flex items-center gap-1.5"
+            >
+              {redrafting ? (
+                <>
+                  <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Re-drafting...
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}>
+                    <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Re-draft emails
+                </>
+              )}
             </button>
           </div>
         )}
