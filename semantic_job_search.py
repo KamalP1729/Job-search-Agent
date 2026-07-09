@@ -21,7 +21,7 @@ Why this is better:
 
 import time
 
-from job_search import _build_queries, _fetch_jobs, _parse_job, _requires_visa, _yoe_mismatch  # reuse fetch logic
+from job_search import _build_queries, _fetch_jobs, _parse_job, _requires_visa, _yoe_mismatch, _is_stale  # reuse fetch logic
 from scorer import score_job
 from embedder import embed_profile, semantic_score, hybrid_score
 from guardrails import get_logger, sanitize_input, track_token_usage
@@ -72,6 +72,9 @@ def search_and_rank_semantic(
                         continue
                     if _yoe_mismatch(job, profile.get("total_yoe", 0)):
                         logger.info("Skipped (YOE mismatch): %s — %s", job["company"], job["title"])
+                        continue
+                    if _is_stale(job):
+                        logger.info("Skipped (stale, %s): %s — %s", job.get("posted_at", "?"), job["company"], job["title"])
                         continue
                     seen.add(key)
                     jobs.append(job)

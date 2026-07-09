@@ -1,6 +1,6 @@
 PARSE_MODEL   = "gemini/gemini-2.5-flash"
 SCORE_MODEL   = "gemini/gemini-2.5-flash"
-FALLBACK_MODEL = "gemini/gemini-2.0-flash"  # used on final retry if primary fails
+FALLBACK_MODEL = "gemini/gemini-2.5-flash"  # used on final retry if primary fails
 
 DRAUP_LLM_ENV      = "prod"
 DRAUP_LLM_USER     = "math"

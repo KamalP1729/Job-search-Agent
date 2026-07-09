@@ -130,6 +130,25 @@ def _yoe_mismatch(job: dict, candidate_yoe: float, tolerance: float = 2.0) -> bo
     return False
 
 
+def _is_stale(job: dict, max_days: int = 30) -> bool:
+    """
+    Return True if the job was posted more than max_days ago.
+    Parses SerpAPI's relative strings: "3 days ago", "1 week ago", "2 months ago".
+    Jobs with no posted_at are kept (benefit of the doubt).
+    """
+    posted = (job.get("posted_at") or "").lower().strip()
+    if not posted:
+        return False
+
+    match = re.search(r"(\d+)\s*(hour|day|week|month|year)s?\s*ago", posted)
+    if not match:
+        return False
+
+    n, unit = int(match.group(1)), match.group(2)
+    days = {"hour": 0, "day": n, "week": n * 7, "month": n * 30, "year": n * 365}[unit]
+    return days > max_days
+
+
 def _requires_visa(job: dict) -> bool:
     """
     Return True if the job description signals it requires US work authorization
@@ -254,6 +273,9 @@ def search_and_rank(
                         continue
                     if _yoe_mismatch(job, profile.get("total_yoe", 0)):
                         print(f"    [skipped] {job['company']} — {job['title']} (YOE mismatch)", flush=True)
+                        continue
+                    if _is_stale(job):
+                        print(f"    [skipped] {job['company']} — {job['title']} (posted {job.get('posted_at', '?')})", flush=True)
                         continue
                     seen.add(key)
                     jobs.append(job)
