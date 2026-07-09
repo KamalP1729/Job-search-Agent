@@ -4,7 +4,9 @@ main.py — FastAPI backend for the Job Agent UI.
 
 import asyncio
 import json
+import os
 import uuid
+from pathlib import Path
 from typing import Optional
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
@@ -24,8 +26,22 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# In-memory OAuth token store: session_id -> token_info dict
-_gmail_tokens: dict[str, dict] = {}
+# OAuth token store — persisted to disk so restarts don't lose the token
+_TOKEN_FILE = Path(__file__).parent / ".gmail_tokens.json"
+
+def _load_tokens() -> dict:
+    try:
+        return json.loads(_TOKEN_FILE.read_text())
+    except Exception:
+        return {}
+
+def _save_tokens(tokens: dict) -> None:
+    try:
+        _TOKEN_FILE.write_text(json.dumps(tokens))
+    except Exception:
+        pass
+
+_gmail_tokens: dict[str, dict] = _load_tokens()
 
 
 # ── ROUTES ────────────────────────────────────────────────────────────────────
@@ -253,6 +269,7 @@ async def gmail_callback(code: str = "", state: str = "", error: str = ""):
         from auth import exchange_gmail_code
         token_info = exchange_gmail_code(code=code, state=state)
         _gmail_tokens[state] = token_info
+        _save_tokens(_gmail_tokens)
         return RedirectResponse(
             url=f"http://localhost:3000?gmail=connected&session={state}"
         )

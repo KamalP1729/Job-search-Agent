@@ -4,6 +4,7 @@
 *.pem
 *.key
 client_secret_*.json
+backend/.gmail_tokens.json
 
 # Personal resume files
 *.pdf
